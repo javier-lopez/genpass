@@ -28,14 +28,34 @@ A stateless password generator.
 
 ### On other Linux distributions
 
-1. `make` #compile from source
+1. Compile from source
+
+   ```
+   $ make
+   ```
+
 2. Copy `genpass` or `genpass-static` to a system wide location or use directly
+
+   ```
+   $ cp genpass genpass-static /usr/local/bin/
+   ```
+
 3. Enjoy ☺!
 
-Linux static binaries can be retrieved with `static-get`, for x86|amd64 platforms
+Linux static binaries can also be retrieved with `static-get`, for x86|amd64 platforms
 
-1. `sh <(wget -qO- s.minos.io/s) -x genpass`
+1. Fetch static binaries
+
+   ```
+   $ sh <(wget -qO- s.minos.io/s) -x genpass`
+   ```
+
 2. Copy `genpass` or `genpass-static` to a system wide location or use directly
+
+   ```
+   $ cp genpass genpass-static /usr/local/bin/
+   ```
+
 3. Enjoy ☺!
 
 ## Usage
@@ -75,4 +95,4 @@ The [scheme](https://www.cs.utexas.edu/~bwaters/publications/papers/www2005.pdf)
 
 Typical attackers (with access to a generated password but without a master password nor a cache key) will need to spend 60.1 seconds on average per try and will have little room for parallelization, legitimate users on the other hand will require 0.1s after the initial cache key is calculated. This way the scheme strives for the best balance between security and usability.
 
-The scheme has been updated to use a key derivation function specifically designed to be computationally intensive on CPU, RAM and custom hardware attacks, [scrypt](http://www.tarsnap.com/scrypt/scrypt.pdf). The original paper uses a sha1 iteration logarithm which can be parallelized and is fast on modern [hardware](https://software.intel.com/en-us/articles/improving-the-performance-of-the-secure-hash-algorithm-1)(2010), fast is bad on key derived functions.
+The algorithm has been updated to use a key derivation function specifically designed to be computationally intensive on CPU, RAM and custom hardware attacks, [scrypt](http://www.tarsnap.com/scrypt/scrypt.pdf). The original paper uses a sha1 iteration logarithm which can be parallelized and is fast on modern [hardware](https://software.intel.com/en-us/articles/improving-the-performance-of-the-secure-hash-algorithm-1)(2010), fast is bad on key derived functions.
