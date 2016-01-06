@@ -1,10 +1,6 @@
 before_install:
   - sudo apt-get update
-  #expect is only required for testingg genpass
-  #xclip, notify* are only required for testing getpass
+  #expect is required for testing genpass
+  #xvfb, xclip and notify* are required for testing getpass
   - sudo apt-get install -y build-essential expect xclip notify-osd libnotify-bin
-  #a X server is required to test clipboard support
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-script: make && cd test/ && sh test.sh
+script: make && cd test/ && xvfb-run sh test.sh
