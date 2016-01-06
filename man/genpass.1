@@ -1,0 +1,67 @@
+.TH GENPASS "1" "January 2016" "genpass 2016.01.01" "User Commands"
+.SH NAME
+genpass \- A stateless password generator.
+.SH SYNOPSIS
+.B genpass
+[\fIoption\fR]... [\fIsite\fR]
+.SH DESCRIPTION
+Generate stateless passwords based on a two level hash scheme.
+.TP
+\fB\-n\fR, \fB\-\-name\fR "Full Name"
+name
+.TP
+\fB\-p\fR, \fB\-\-password\fR "Secret"
+master password
+.TP
+\fB\-s\fR, \fB\-\-site\fR "site.tld"
+site login
+.TP
+\fB\-r\fR, \fB\-\-registration\-mode\fR
+ask twice for master password
+.TP
+\fB\-f\fR, \fB\-\-file\fR FILE
+use|write cache key from|to FILE
+.TP
+\fB\-l\fR, \fB\-\-key\-length\fR 8\-1024
+key length in bytes, "32" by default
+.TP
+\fB\-C\fR, \fB\-\-cache\-cost\fR 1\-30
+cpu/memory cost for cache key, "20" by default
+.TP
+\fB\-c\fR, \fB\-\-cost\fR 1\-30
+cpu/memory cost for final key, "10" by default
+.TP
+\fB\-\-scrypt\-r\fR 1\-9999
+block size, "8" by default (advanced)
+.TP
+\fB\-\-scrypt\-p\fR 1\-99999
+parallelization, "16" by default (advanced)
+.TP
+\fB\-N\fR, \fB\-\-dry\-run\fR
+perform a trial run with no changes made
+.TP
+\fB\-e\fR, \fB\-\-encoding\fR ENCODING
+password encoding output, "z85" by default.
+.PP
+       ENCODING: dec|hex|base64|z85|skey
+.TP
+\fB\-1\fR, \fB\-\-single\fR
+use single function derivation
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+verbose mode
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+show version and exit
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.SH "REPORTING BUGS"
+Report genpass bugs in <https://github.com/chilicuil/genpass/issues>
+.br
+.SH "SEE ALSO"
+Password Multiplier using iterated sha1 hashing, 2005. <http://www.cs.utexas.edu/~bwaters/publications/papers/www2005.pdf>
+.br
+Stronger Key Derivation Via Sequential Memory-hard Functions, 2009. <http://www.tarsnap.com/scrypt/scrypt.pdf>
+.PP
+getpass(1)
