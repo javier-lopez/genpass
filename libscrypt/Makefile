@@ -23,7 +23,7 @@ reference: libscrypt.so.0 main.o crypto_scrypt-hexconvert.o
 	$(CC) -Wall -static -o reference-static main.o b64.o z85.o b10.o skey.o crypto_scrypt-hexconvert.o $(CFLAGS_EXTRA) -L. -lscrypt
 
 clean:
-	rm -f *.o reference libscrypt.so* libscrypt.a endian.h
+	rm -f *.o reference* libscrypt.so* libscrypt.a endian.h
 
 check: all
 	./reference
