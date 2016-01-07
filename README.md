@@ -24,9 +24,7 @@ A stateless password generator.
    $ sudo apt-get update && sudo apt-get install genpass
    ```
 
-3. Enjoy ☺!
-
-### On other Linux distributions
+### Other Linux distributions
 
 1. Compile from source
 
@@ -40,23 +38,19 @@ A stateless password generator.
    $ cp genpass genpass-static /usr/local/bin/
    ```
 
-3. Enjoy ☺!
-
-Linux static binaries can also be retrieved with `static-get`, for x86|amd64 platforms
+Linux static binaries can also be retrieved with [static-get](https://github.com/minos-org/minos-static), for x86|amd64 platforms
 
 1. Fetch static binaries
 
    ```
-   $ sh <(wget -qO- s.minos.io/s) -x genpass`
+   $ sh <(wget -qO- s.minos.io/s) -x genpass
    ```
 
 2. Copy `genpass` or `genpass-static` to a system wide location or use directly
 
    ```
-   $ cp genpass genpass-static /usr/local/bin/
+   $ cp genpass-*/genpass genpass-*/genpass-static /usr/local/bin/
    ```
-
-3. Enjoy ☺!
 
 ## Usage
 
