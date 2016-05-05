@@ -23,7 +23,7 @@
 #include "libscrypt/skey.h"
 #include "libscrypt/libscrypt.h"
 
-#define VERSION "2016.01.01"
+#define VERSION "2016.05.04"
 
 //libscrypt/libscrypt.h:57
 #undef  SCRYPT_HASH_LEN
@@ -31,12 +31,17 @@
 #define SCRYPT_HASH_LEN_MAX 1024
 #define SCRYPT_HASH_LEN_MIN    8
 #define SCRYPT_CACHE_COST     20
-#define SCRYPT_COST           10
+#define SCRYPT_COST           14
 #define SCRYPT_SAFE_N         30
 #define SCRYPT_r               8
 #define SCRYPT_SAFE_r       9999
 #define SCRYPT_p              16
 #define SCRYPT_SAFE_p      99999
+
+#define DEFAULT_ENCODING  "z85"
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 void version(void) {
     const char *version_message=VERSION;
@@ -53,13 +58,13 @@ void usage(int status) {
       \n  -s, --site \"site.tld\"     site login\
       \n  -r, --registration-mode   ask twice for master password\
       \n  -f, --file FILE           use|write cache key from|to FILE\
-      \n  -l, --key-length 8-1024   key length in bytes, \"32\" by default\
-      \n  -C, --cache-cost 1-30     cpu/memory cost for cache key, \"20\" by default\
-      \n  -c, --cost 1-30           cpu/memory cost for final key, \"10\" by default\
-      \n      --scrypt-r 1-9999     block size, \"8\" by default (advanced)\
-      \n      --scrypt-p 1-99999    parallelization, \"16\" by default (advanced)\
+      \n  -l, --key-length 8-1024   key length in bytes, \""TOSTRING(SCRYPT_HASH_LEN)"\" by default\
+      \n  -C, --cache-cost 1-30     cpu/memory cost for cache key, \""TOSTRING(SCRYPT_CACHE_COST)"\" by default\
+      \n  -c, --cost 1-30           cpu/memory cost for final key, \""TOSTRING(SCRYPT_COST)"\" by default\
+      \n      --scrypt-r 1-9999     block size, \""TOSTRING(SCRYPT_r)"\" by default (advanced)\
+      \n      --scrypt-p 1-99999    parallelization, \""TOSTRING(SCRYPT_p)"\" by default (advanced)\
       \n  -N, --dry-run             perform a trial run with no changes made\
-      \n  -e, --encoding ENCODING   password encoding output, \"z85\" by default\
+      \n  -e, --encoding ENCODING   password encoding output, \""DEFAULT_ENCODING"\" by default\
       \n                              ENCODING: dec|hex|base64|z85|skey\
       \n  -1, --single              use single function derivation\
       \n  -v, --verbose             verbose mode\
@@ -140,7 +145,7 @@ int main(const int argc, const char * const argv[]) {
     int  scrypt_r                               = SCRYPT_r;
     int  scrypt_p                               = SCRYPT_p;
     char dry_run                                = 0;
-    char * encoding                             = "z85";
+    char * encoding                             = DEFAULT_ENCODING;
     char single_function_derivation             = 0;
     char verbose_lvl                            = 0;
 

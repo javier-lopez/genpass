@@ -10,6 +10,14 @@
 #Master password:
 #4E1FQYCc.6M18R$rjl5]EO5FwkS>fVEw-KaNwROer
 
+SCRYPT_HASH_LEN="32"
+SCRYPT_CACHE_COST="20"
+SCRYPT_COST="14"
+SCRYPT_r="8"
+SCRYPT_p="16"
+DEFAULT_ENCODING="z85"
+TIMEOUT="10"
+
 _usage() {
     printf "%s\\n" "Usage: ${progname} [option]... site"
     printf "%b\\n" "Stateless password generator"
@@ -18,16 +26,16 @@ _usage() {
     printf "%s\\n" "  -p, --password \"Secret\"   master password"
     printf "%s\\n" "  -r, --registration-mode   ask twice for master password"
     printf "%s\\n" "  -f, --file FILE           use|write cache key from|to FILE"
-    printf "%s\\n" "  -l, --key-length 8-1024   key length in bytes, \"32\" by default"
-    printf "%s\\n" "  -C, --cache-cost 1-30     cpu/memory cost for cache key, \"20\" by default"
-    printf "%s\\n" "  -c, --cost 1-30           cpu/memory cost for final key, \"10\" by default"
-    printf "%s\\n" "  --scrypt-r 1-9999         block size, \"8\" by default (advanced)"
-    printf "%s\\n" "  --scrypt-p 1-99999        parallelization, \"16\" by default (advanced)"
+    printf "%s\\n" "  -l, --key-length 8-1024   key length in bytes, \"${SCRYPT_HASH_LEN}\" by default"
+    printf "%s\\n" "  -C, --cache-cost 1-30     cpu/memory cost for cache key, \"${SCRYPT_CACHE_COST}\" by default"
+    printf "%s\\n" "  -c, --cost 1-30           cpu/memory cost for final key, \"${SCRYPT_COST}\" by default"
+    printf "%s\\n" "  --scrypt-r 1-9999         block size, \"${SCRYPT_r}\" by default (advanced)"
+    printf "%s\\n" "  --scrypt-p 1-99999        parallelization, \"${SCRYPT_p}\" by default (advanced)"
     printf "%s\\n" "  -N, --dry-run             perform a trial run with no changes made"
-    printf "%s\\n" "  -e, --encoding ENCODING   password encoding output, \"z85\" by default"
+    printf "%s\\n" "  -e, --encoding ENCODING   password encoding output, \"${DEFAULT_ENCODING}\" by default"
     printf "%s\\n" "                              ENCODING: dec|hex|base64|z85|skey"
     printf "%s\\n" "  -1, --single              use single function derivation"
-    printf "%s\\n" "  -k, --kill-after SEC      kill clipboard after N seconds, \"10\" by default, 0 to disable"
+    printf "%s\\n" "  -k, --kill-after SEC      kill clipboard after N seconds, \"${TIMEOUT}\" by default, 0 to disable"
     printf "%s\\n" "  -v, --verbose             verbose mode"
     printf "%s\\n" "  -V, --version             show version and exit"
     printf "%s\\n" "  -h, --help                show this help message and exit"
@@ -280,8 +288,8 @@ fi
 #TODO 01-01-2016 14:50 >> find out more ways to get full names
 [ -z "${name}" ] && name="$(git config --list 2>/dev/null | awk -F= '/user.name/ {print $2}')"
 
-[ -z "${seconds}" ]      && seconds="10" || {
-    _is_int "${seconds}" || seconds="10"
+[ -z "${seconds}" ]      && seconds="${TIMEOUT}" || {
+    _is_int "${seconds}" || seconds="${TIMEOUT}"
 }
 
 OLDIFS="${IFS}"; IFS="|"

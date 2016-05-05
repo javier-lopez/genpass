@@ -70,18 +70,20 @@ General use
 
 Because `genpass` hashes your (master password + url + name), you can use it to retrieve (regenerate) your passwords on any computer where it's installed.
 
-It's recommended to defined cost, length and other parameters explicitly, default values may change between versions as computers get updated on CPU/RAM.
+It's recommended to defined cost, length and other parameters explicitly, default values will change between versions as computers get updated on CPU/RAM.
 
-Default values for version `2016.01.01`:
+Default values for version `2016.05.04` are:
 
 Parameter             | Value
 --------------------- | -------------
 Cache cost (Scrypt N) | 2^20
-Cost       (Scrypt N) | 2^10
+Cost       (Scrypt N) | 2^14
 Scrypt r              | 8 bits
 Scrypt p              | 16 bits
 Key length            | 32 bytes, 256 bits
 Encoding              | z85
+
+Past default values are listed in the [defaults.md](https://github.com/chilicuil/genpass/blob/master/defaults.md) file.
 
 ## Scheme
 
@@ -90,3 +92,13 @@ The [scheme](https://www.cs.utexas.edu/~bwaters/publications/papers/www2005.pdf)
 Typical attackers (with access to a generated password but without a master password nor a cache key) will need to spend 60.1 seconds on average per try and will have little room for parallelization, legitimate users on the other hand will require 0.1s after the initial cache key is calculated. This way the scheme strives for the best balance between security and usability.
 
 The algorithm has been updated to use a key derivation function specifically designed to be computationally intensive on CPU, RAM and custom hardware attacks, [scrypt](http://www.tarsnap.com/scrypt/scrypt.pdf). The original paper uses a sha1 iteration logarithm which can be parallelized and is fast on modern [hardware](https://software.intel.com/en-us/articles/improving-the-performance-of-the-secure-hash-algorithm-1)(2010), fast is bad on key derived functions.
+
+## License
+
+I don't understand the desire in humans to own everything, including non touchable abstract objects, however some persons may require this software to be licensed and therefore.
+
+    Copyright © 2016 Javier Lopez <m@javier.io>
+    This work is free. It comes without any warranty, to the extent permitted
+    by applicable law. You can redistribute it and/or modify it under the terms
+    of the Do What The Fuck You Want To Public License, Version 2, as published
+    by Sam Hocevar. See the LICENSE.txt file for more details.
