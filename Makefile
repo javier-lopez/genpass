@@ -27,6 +27,7 @@ genpass: deps genpass.o
 		libscrypt/b64.o     libscrypt/z85.o         \
 		libscrypt/skey.o		 	    \
 		libscrypt/crypto_scrypt-hexconvert.o        \
+		base91/base91.o                             \
 		$(CFLAGS_EXTRA) -L./libscrypt/ -lscrypt
 	$(CC) -static -o genpass-static genpass.o           \
 		arg_parser/arg_parser.o readpass/readpass.o \
@@ -34,6 +35,7 @@ genpass: deps genpass.o
 		libscrypt/b64.o libscrypt/z85.o             \
 		libscrypt/skey.o		 	    \
 		libscrypt/crypto_scrypt-hexconvert.o        \
+		base91/base91.o                             \
 		$(CFLAGS_EXTRA) -L./libscrypt/ -lscrypt
 
 dist: all

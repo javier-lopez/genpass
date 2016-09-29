@@ -22,6 +22,7 @@
 #include "libscrypt/z85.h"
 #include "libscrypt/skey.h"
 #include "libscrypt/libscrypt.h"
+#include "base91/base91.h"
 
 #define VERSION "2016.05.04"
 
@@ -117,6 +118,29 @@ void zerostring(char *s) {
      while(*s) *s++ = 0;
 }
 
+int base91_encoding(unsigned char const *src, size_t srclength, void *target, size_t targsize) {
+    static struct basE91 b91;
+    size_t s;
+    int total_size = 0;
+
+    // zero the output buffer
+    memset(target,'\0',targsize);
+
+    // setup the base91 struct
+    basE91_init(&b91);
+
+    // encode most of it and keep the size
+    s = basE91_encode(&b91, src, srclength, target);
+    total_size += s;
+
+    // pickup anything left and keep the size
+    s = basE91_encode_end(&b91, (void*)(target+s));
+    total_size += s;
+
+    // return the total size
+    return total_size;
+}
+
 int encode(char const *encoding, unsigned char const *src,
            size_t srclength, char *target, size_t targsize) {
     if (strcmp(encoding, "z85") == 0)
@@ -129,6 +153,8 @@ int encode(char const *encoding, unsigned char const *src,
         return libscrypt_b10_encode(src, srclength, target, targsize);
     else if (strcmp(encoding, "skey") == 0)
         return libscrypt_skey_encode(src, srclength, target, targsize);
+    else if (strcmp(encoding, "b91") == 0)
+        return base91_encoding(src, srclength, target, targsize);
     else
         return -1;
 }
@@ -157,7 +183,7 @@ int main(const int argc, const char * const argv[]) {
     char mix_name_site[2032]                    = {0};
     const char * homedir                        = NULL;
     const char *encodings[]                     = {
-        "dec", "hex", "base64", "z85", "skey", NULL };
+        "dec", "hex", "base64", "z85", "skey", "b91", NULL };
     FILE  *fp                                   = NULL;
     int   i, readbytes, argi                    = 0;
     uint64_t cache_scrypt_n                     = 0;
