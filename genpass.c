@@ -475,7 +475,6 @@ int main(const int argc, const char * const argv[]) {
         snprintf(mix_name_site, sizeof(mix_name_site), "%s%s", name, site);
         name = mix_name_site;
     } else {
-        zerostring(name);
         if (libscrypt_b64_encode_compliant(cache_hashbuf, keylen, b64buf, sizeof(b64buf)) == -1) {
             snprintf(error_msg, sizeof error_msg, \
                 "libscrypt_b64_encode_compliant() failed: %s", strerror(errno));
@@ -484,7 +483,7 @@ int main(const int argc, const char * const argv[]) {
         snprintf(verbose_msg, sizeof(verbose_msg), "Cache key: %s", b64buf);
         verbose(verbose_msg, verbose_lvl);
         verbose("Generating double derived key ...", verbose_lvl);
-        snprintf(mix_name_site, sizeof(mix_name_site), "%s%s", cache_hashbuf, site);
+	snprintf(mix_name_site, sizeof(mix_name_site), "%s%s%s", cache_hashbuf, site, name);
         name = mix_name_site;
     }
 
