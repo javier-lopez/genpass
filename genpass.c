@@ -483,7 +483,7 @@ int main(const int argc, const char * const argv[]) {
         snprintf(verbose_msg, sizeof(verbose_msg), "Cache key: %s", b64buf);
         verbose(verbose_msg, verbose_lvl);
         verbose("Generating double derived key ...", verbose_lvl);
-	snprintf(mix_name_site, sizeof(mix_name_site), "%s%s%s", cache_hashbuf, site, name);
+        snprintf(mix_name_site, sizeof(mix_name_site), "%s%s%s", cache_hashbuf, site, name);
         name = mix_name_site;
     }
 

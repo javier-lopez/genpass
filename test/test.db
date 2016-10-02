@@ -36,14 +36,16 @@ test X"$(genpass-static --scrypt-p 2>&1|head -1)"        = X"genpass: option '--
 test X"$(genpass-static --scrypt-p a 2>&1|head -1)"      = X"genpass: option '--scrypt-p' requires a numerical argument, 'a'"
 test X"$(genpass-static --scrypt-r 102911 2>&1|head -1)" = X"genpass: option '--scrypt-r' numerical value must be between 1-9999, '102911'"
 
-test X"$(genpass-static -f ./key -C1 -c1 -n1 -p1 1)"               = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
-test X"$(genpass-static -f ./key -C1 -c1 -n1 -p1 1 -e z85)"        = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
-test X"$(genpass-static -f ./key -C1 -c1 -l8 -e dec -n1 -p1 1)"    = X"108106147472228515313"
-test X"$(genpass-static -f ./key -C1 -c1 -l8 -e hex -n1 -p1 1)"    = X"6c6a932fde55990d"
-test X"$(genpass-static -f ./key -C1 -c1 -l8 -e base64 -n1 -p1 1)" = X"bGqTL95VmQ0"
-test X"$(genpass-static -f ./key -C1 -c1 -l8 -e skey -n1 -p1 1)"   = X"CREW BEAM RAIL MIST BLOT FROM"
-test X"$(genpass-static -f "./cache key" -C1 -c1 -l8 -e skey -n1 -p1 1)" = X"CREW BEAM RAIL MIST BLOT FROM"
-test -f "./cache key" && test -f "./key" && rm -rf "./cache key"
+test X"$(genpass-static -f ./key -C1 -c1 -n1 -p1 1)"               = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+test X"$(genpass-static -f ./key -C1 -c1 -n1 -p1 1 -e z85)"        = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+test X"$(genpass-static -f ./key -C1 -c1 -l8 -e dec -n1 -p1 1)"    = X"57175901779215943103"
+test X"$(genpass-static -f ./key -C1 -c1 -l8 -e hex -n1 -p1 1)"    = X"39af5ab15c9f2b67"
+test X"$(genpass-static -f ./key -C1 -c1 -l8 -e base64 -n1 -p1 1)" = X"Oa9asVyfK2c"
+test X"$(genpass-static -f ./key -C1 -c1 -l8 -e skey -n1 -p1 1)"         = X"RYE EGAN LEAR MEAL USES LUCK"
+test -f ./key && rm -rf key
+
+test X"$(genpass-static -f ./key -C1 -c1 -n2 -p1 1)"               = X"4Topkr=o[<![BSgd)n^<s7PH0+3*U1QUv??*b9hjp"
+test -f ./key && rm -rf key
 
 genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null
 genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null
@@ -106,14 +108,16 @@ test X"$(getpass --scrypt-p 2>&1|head -1)"        = X"genpass: option '--scrypt-
 test X"$(getpass --scrypt-p a 2>&1|head -1)"      = X"genpass: option '--scrypt-p' requires a numerical argument, 'a'"
 test X"$(getpass --scrypt-r 102911 2>&1|head -1)" = X"genpass: option '--scrypt-r' numerical value must be between 1-9999, '102911'"
 
-getpass -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"               = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
-getpass -f ./key -C1 -c1 -n1 -p1 1 -e z85 && test X"$(xclip -o -selection clipboard)"        = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
-getpass -f ./key -C1 -c1 -l8 -e dec -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"    = X"108106147472228515313"
-getpass -f ./key -C1 -c1 -l8 -e hex -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"    = X"6c6a932fde55990d"
-getpass -f ./key -C1 -c1 -l8 -e base64 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"bGqTL95VmQ0"
-getpass -f ./key -C1 -c1 -l8 -e skey -n1 -p1 1   && test X"$(xclip -o -selection clipboard)" = X"CREW BEAM RAIL MIST BLOT FROM"
-getpass -f "./cache key" -C1 -c1 -l8 -e skey -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"CREW BEAM RAIL MIST BLOT FROM"
-test -f "./cache key" && test -f "./key" && rm -rf "./cache key"
+getpass -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"               = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+getpass -f ./key -C1 -c1 -n1 -p1 1 -e z85 && test X"$(xclip -o -selection clipboard)"        = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+getpass -f ./key -C1 -c1 -l8 -e dec -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"    = X"57175901779215943103"
+getpass -f ./key -C1 -c1 -l8 -e hex -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"    = X"39af5ab15c9f2b67"
+getpass -f ./key -C1 -c1 -l8 -e base64 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"Oa9asVyfK2c"
+getpass -f ./key -C1 -c1 -l8 -e skey -n1 -p1 1   && test X"$(xclip -o -selection clipboard)" = X"RYE EGAN LEAR MEAL USES LUCK"
+test -f ./key && rm -rf key
+
+getpass -f ./key -C1 -c1 -n2 -p1 1 && test X"$(xclip -o -selection clipboard)"               = X"4Topkr=o[<![BSgd)n^<s7PH0+3*U1QUv??*b9hjp"
+test -f ./key && rm -rf key
 
 getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null
 getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null
@@ -134,8 +138,8 @@ test ! -f ./key
 getpass -f ./key -N -v -C1 -c1 -n1 -p1 1 2>&1 | grep "Generating new cache key" >/dev/null
 test ! -f ./key
 
-getpass -k 1 -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
-test X"$(xclip -o -selection clipboard)" = X"4ui?YtkC[}e[XHCYs.r9Zsd{NC+aDl/US?h9A)58!"
+getpass -k 1 -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+test X"$(xclip -o -selection clipboard)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
 sleep 1.1 || sleep 2 && test X"$(xclip -o -selection clipboard)" = X""
 @end
 # vim: set ts=8 sw=4 tw=0 ft=sh :
