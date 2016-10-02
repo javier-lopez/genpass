@@ -2,7 +2,7 @@
 //usage: genpass [option]... [site]
 
 //example: genpass github.com
-//Name: Joe Foobar
+//Name: John Doe
 //Master password:
 //4E1FQYCc.6M18R$rjl5]EO5FwkS>fVEw-KaNwROer
 
@@ -41,22 +41,21 @@
 #define SCRYPT_p              16
 #define SCRYPT_SAFE_p      99999
 
-#define DEFAULT_ENCODING  "z85"
+#define DEFAULT_ENCODING   "z85"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-typedef struct config_params
-{
-	char *scrypt_r;
-	char *scrypt_p;
-	char *keylen;
-	char *cache_cost;
-	char *cost;
-	char *name;
-	char *password;
-	char *site;
-	char *encoding;
+typedef struct config_params {
+    char *scrypt_r;
+    char *scrypt_p;
+    char *keylen;
+    char *cache_cost;
+    char *cost;
+    char *name;
+    char *password;
+    char *site;
+    char *encoding;
 } configuration;
 
 void version(void) {
@@ -83,8 +82,9 @@ void usage(int status) {
       \n  -e, --encoding ENCODING   password encoding output, \""DEFAULT_ENCODING"\" by default\
       \n                              ENCODING: dec|hex|base64|z85|skey\
       \n  -1, --single              use single function derivation\
+      \n      --config              configuration file\
+      \n\
       \n  -v, --verbose             verbose mode\
-	  \n      --config              configuration file\
       \n  -V, --version             show version and exit\
       \n  -h, --help                show this help message and exit\n";
     if (status != EXIT_SUCCESS) fprintf(stderr, "%s", usage_message);
@@ -134,7 +134,8 @@ void zerostring(char *s) {
      while(*s) *s++ = 0;
 }
 
-int base91_encoding(unsigned char const *src, size_t srclength, void *target, size_t targsize) {
+int base91_encoding(unsigned char const *src, size_t srclength,
+                    void *target, size_t targsize) {
     static struct basE91 b91;
     size_t s;
     int total_size = 0;
@@ -175,9 +176,8 @@ int encode(char const *encoding, unsigned char const *src,
         return -1;
 }
 
-static int handler(void* user, const char* section, const char* name,
-                   const char* value)
-{
+static int config_handler (void* user, const char* section, const char* name,
+                    const char* value) {
     configuration* pconfig = (configuration*)user;
 
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
@@ -187,17 +187,17 @@ static int handler(void* user, const char* section, const char* name,
         pconfig->site = strdup(value);
     } else if (MATCH("user", "password")) {
         pconfig->password = strdup(value);
-    } else if (MATCH("info", "keylen")) {
+    } else if (MATCH("general", "keylen")) {
         pconfig->keylen = strdup(value);
-    } else if (MATCH("info", "cache_cost")) {
+    } else if (MATCH("general", "cache_cost")) {
         pconfig->cache_cost = strdup(value);
-    } else if (MATCH("info", "cost")) {
+    } else if (MATCH("general", "cost")) {
         pconfig->cost = strdup(value);
-    } else if (MATCH("info", "scrypt_r")) {
+    } else if (MATCH("general", "scrypt_r")) {
         pconfig->scrypt_r = strdup(value);
-    } else if (MATCH("info", "scrypt_p")) {
+    } else if (MATCH("general", "scrypt_p")) {
         pconfig->scrypt_p = strdup(value);
-    } else if (MATCH("info", "encoding")) {
+    } else if (MATCH("general", "encoding")) {
         pconfig->encoding = strdup(value);
     }
     else {
@@ -206,9 +206,7 @@ static int handler(void* user, const char* section, const char* name,
     return 1;
 }
 
-
-void check_option(int choice, const char * const arg, int *option_value)
-{
+void check_option(int choice, const char * const arg, int *option_value) {
     char error_msg[256] = {0};
     if (arg[0]) {
         if (strtol(arg, NULL, 10) <= 0) {
@@ -277,8 +275,7 @@ void check_option(int choice, const char * const arg, int *option_value)
     }
 }
 
-void check_encoding(int choice, const char * const arg)
-{
+void check_encoding(int choice, const char * const arg) {
     int valid_encoding = 0, i = 0;
     char error_msg[256] = {0};
     char *encoding = NULL;
@@ -348,11 +345,12 @@ int main(const int argc, const char * const argv[]) {
 
     uint8_t cache_hashbuf[SCRYPT_HASH_LEN_MAX]  = {0};
     uint8_t hashbuf[SCRYPT_HASH_LEN_MAX]        = {0};
-	bool is_config                              = false;
-    
+
+    configuration conf                          = {0};
+    bool is_config                              = false;
+
     struct rlimit rlim;
     struct Arg_parser parser;
-	configuration conf = {0};
     const struct ap_Option options[] = {
       { 'n', "name",                ap_yes },
       { 'p', "password",            ap_yes },
@@ -421,9 +419,9 @@ int main(const int argc, const char * const argv[]) {
         } else { if (arg[0]) site = (char *) arg; }
     }
 
-    // check if configuration file is provided
+    //check if configuration file is provided
     if (is_config) {
-        if (ini_parse(config, handler, &conf) < 0) {
+        if (ini_parse(config, config_handler, &conf) < 0) {
             die("Can not load config file.", 0, 0);
         }
 
