@@ -215,7 +215,7 @@ void check_option(int choice, const char * const arg, int *option_value) {
         if (strtol(arg, NULL, 10) <= 0) {
             if (choice == 200)
                 snprintf(error_msg, sizeof error_msg,
-                         "option_value '--scrypt-r' requires a numerical argument, '%s'",
+                         "option '--scrypt-r' requires a numerical argument, '%s'",
                          arg);
             else if (choice == 201)
                 snprintf(error_msg, sizeof error_msg,
@@ -223,7 +223,7 @@ void check_option(int choice, const char * const arg, int *option_value) {
                          arg);
             else
                 snprintf(error_msg, sizeof error_msg,
-                         "option '%c' requires a numerical argument, '%s'",
+                         "option '-%c' requires a numerical argument, '%s'",
                          (char)choice, arg);
             die(error_msg, 0, 1);
 
@@ -410,6 +410,7 @@ int main(const int argc, const char * const argv[]) {
                     break;
                 case 201: check_option(code, arg, &scrypt_p);
                     break;
+                case 'N': dry_run = 1; break;
                 case 'e': check_encoding(code, arg);
                     encoding = (char *) arg;
                     break;

@@ -13,6 +13,7 @@ genpass-static -C; test X"${?}"              = X"1"
 genpass-static -c; test X"${?}"              = X"1"
 genpass-static --scrypt-r; test X"${?}"      = X"1"
 genpass-static --scrypt-p; test X"${?}"      = X"1"
+genpass-static --config; test X"${?}"        = X"1"
 genpass-static --cui; test X"${?}"           = X"1"
 test X"$(genpass-static -h |head -1)"        = X"Usage: genpass [option]... [site]"
 test X"$(genpass-static --help |head -1)"    = X"Usage: genpass [option]... [site]"
@@ -29,6 +30,8 @@ test X"$(genpass-static -C121 2>&1|head -1)" = X"genpass: option '-C' numerical 
 test X"$(genpass-static -c a 2>&1|head -1)"  = X"genpass: option '-c' requires a numerical argument, 'a'"
 test X"$(genpass-static -c121 2>&1|head -1)" = X"genpass: option '-c' numerical value must be between 1-30, '121'"
 test X"$(genpass-static -e d 2>&1|head -1)"  = X"genpass: invalid text encoding 'd'"
+test X"$(genpass-static --config 2>&1|head -1)"          = X"genpass: option '--config' requires an argument"
+test X"$(genpass-static --config cui 2>&1|head -1)"      = X"genpass: couldn't load config file 'cui'"
 test X"$(genpass-static --scrypt-r 2>&1|head -1)"        = X"genpass: option '--scrypt-r' requires an argument"
 test X"$(genpass-static --scrypt-r a 2>&1|head -1)"      = X"genpass: option '--scrypt-r' requires a numerical argument, 'a'"
 test X"$(genpass-static --scrypt-r 10291 2>&1|head -1)"  = X"genpass: option '--scrypt-r' numerical value must be between 1-9999, '10291'"
@@ -47,24 +50,37 @@ test -f ./key && rm -rf key
 test X"$(genpass-static -f ./key -C1 -c1 -n2 -p1 1)"               = X"4Topkr=o[<![BSgd)n^<s7PH0+3*U1QUv??*b9hjp"
 test -f ./key && rm -rf key
 
-genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null
-genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null
-genpass-static -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-genpass-static -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-genpass-static -f ./key -v -C1 -c2 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
+genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null 2>&1
+genpass-static -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C1 -c2 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+genpass-static -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
 test -f ./key && rm -rf key
 
-genpass-static -f ./key -1 -v -c1 -n1 -p1 1 2>&1 | grep "Generating single derived key" >/dev/null
+genpass-static -f ./key -1 -v -c1 -n1 -p1 1 2>&1 | grep "Generating single derived key" >/dev/null 2>&1
 test ! -f ./key
-genpass-static -f ./key -N -v -C1 -c1 -n1 -p1 1 2>&1 | grep "Generating new cache key" >/dev/null
+genpass-static -f ./key -N -v -C1 -c1 -n1 -p1 1 2>&1 | grep "Generating new cache key" >/dev/null 2>&1
 test ! -f ./key
+
+#printf "%s\\n%s\\n" "[user]" "name='1'" > genpass.config #TODO 03-10-2016 12:39 >> BUG, remove ''/"" from name user
+printf "%s\\n%s\\n" "[user]" "name=1" > genpass.config
+test X"$(genpass-static -f ./key --config genpass.config -C1 -c1 -p1 1)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" > genpass.config
+test X"$(genpass-static -f ./key --config genpass.config -C1 -c1 -p1)"   = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" "[general]" "cache_cost=1" > genpass.config
+test X"$(genpass-static -f ./key --config genpass.config -c1 -p1)"       = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" "[general]" "cache_cost=1" "cost=1" > genpass.config
+test X"$(genpass-static -f ./key --config genpass.config -p1)"           = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "password=1" "site=1" "[general]" "cache_cost=1" "cost=1" > genpass.config
+test X"$(genpass-static -f ./key --config genpass.config)"               = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+test -f genpass.config && rm -rf genpass.config
 
 #expect tests
 for genpass_test_exp in ../genpass*; do sh "${genpass_test_exp}" || exit 1; done
@@ -85,6 +101,7 @@ getpass -C; test X"${?}"              = X"1"
 getpass -c; test X"${?}"              = X"1"
 getpass --scrypt-r; test X"${?}"      = X"1"
 getpass --scrypt-p; test X"${?}"      = X"1"
+getpass --config; test X"${?}"        = X"1"
 getpass --cui; test X"${?}"           = X"1"
 test X"$(getpass -h |head -1)"        = X"Usage: getpass [option]... site"
 test X"$(getpass --help |head -1)"    = X"Usage: getpass [option]... site"
@@ -107,6 +124,8 @@ test X"$(getpass --scrypt-r 10291 2>&1|head -1)"  = X"genpass: option '--scrypt-
 test X"$(getpass --scrypt-p 2>&1|head -1)"        = X"genpass: option '--scrypt-p' requires an argument"
 test X"$(getpass --scrypt-p a 2>&1|head -1)"      = X"genpass: option '--scrypt-p' requires a numerical argument, 'a'"
 test X"$(getpass --scrypt-r 102911 2>&1|head -1)" = X"genpass: option '--scrypt-r' numerical value must be between 1-9999, '102911'"
+test X"$(getpass --config 2>&1|head -1)"          = X"genpass: option '--config' requires an argument"
+test X"$(getpass --config cui 2>&1|head -1)"      = X"genpass: couldn't load config file 'cui'"
 
 getpass -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)"               = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
 getpass -f ./key -C1 -c1 -n1 -p1 1 -e z85 && test X"$(xclip -o -selection clipboard)"        = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
@@ -119,27 +138,40 @@ test -f ./key && rm -rf key
 getpass -f ./key -C1 -c1 -n2 -p1 1 && test X"$(xclip -o -selection clipboard)"               = X"4Topkr=o[<![BSgd)n^<s7PH0+3*U1QUv??*b9hjp"
 test -f ./key && rm -rf key
 
-getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null
-getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null
-getpass -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-getpass -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-getpass -f ./key -v -C1 -c2 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null
-getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null
+getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Generating new cache key" >/dev/null 2>&1
+getpass -f ./key -v -C1 -c1 -n1 -p1 1     2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C1 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C1 -c2 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 1 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 1 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Invalid cache key value" >/dev/null 2>&1
+getpass -f ./key -v -C2 -c1 -l8 --scrypt-r 2 --scrypt-p 2 -n1 -p1 1 2>&1 | grep "Loaded valid cache key value" >/dev/null 2>&1
 test -f ./key && rm -rf key
 
-getpass -f ./key -1 -v -c1 -n1 -p1 1 2>&1 | grep "Generating single derived key" >/dev/null
+getpass -f ./key -1 -v -c1 -n1 -p1 1 2>&1 | grep "Generating single derived key" >/dev/null 2>&1
 test ! -f ./key
-getpass -f ./key -N -v -C1 -c1 -n1 -p1 1 2>&1 | grep "Generating new cache key" >/dev/null
+getpass -f ./key -N -v -C1 -c1 -n1 -p1 1 2>&1 | grep "Generating new cache key" >/dev/null 2>&1
 test ! -f ./key
 
 getpass -k 1 -f ./key -C1 -c1 -n1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
 test X"$(xclip -o -selection clipboard)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
 sleep 1.1 || sleep 2 && test X"$(xclip -o -selection clipboard)" = X""
+
+#printf "%s\\n%s\\n" "[user]" "name='1'" > genpass.config #TODO 03-10-2016 12:39 >> BUG, remove ''/"" from name user
+printf "%s\\n%s\\n" "[user]" "name=1" > genpass.config
+getpass -f ./key --config genpass.config -C1 -c1 -p1 1 && test X"$(xclip -o -selection clipboard)" = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" > genpass.config
+getpass -f ./key --config genpass.config -C1 -c1 -p1  && test X"$(xclip -o -selection clipboard)"  = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" "[general]" "cache_cost=1" > genpass.config
+getpass -f ./key --config genpass.config -c1 -p1      && test X"$(xclip -o -selection clipboard)"  = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "site=1" "[general]" "cache_cost=1" "cost=1" > genpass.config
+getpass -f ./key --config genpass.config -p1          && test X"$(xclip -o -selection clipboard)"  = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "[user]" "name=1" "password=1" "site=1" "[general]" "cache_cost=1" "cost=1" > genpass.config
+getpass -f ./key --config genpass.config              && test X"$(xclip -o -selection clipboard)"  = X"4>KGf9&t4Xl?:6V+5jSV1ttxP56oiwW>/XmZ^dr{N"
+test -f genpass.config && rm -rf genpass.config
 @end
 # vim: set ts=8 sw=4 tw=0 ft=sh :
