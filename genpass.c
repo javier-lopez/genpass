@@ -2,7 +2,7 @@
 //usage: genpass [option]... [site]
 
 //example: genpass github.com
-//Name: Joe Foobar
+//Name: John Doe
 //Master password:
 //4E1FQYCc.6M18R$rjl5]EO5FwkS>fVEw-KaNwROer
 
@@ -11,10 +11,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/resource.h>
 
 #include "poison/poison.h"
 #include "arg_parser/arg_parser.h"
+#include "config/ini.h"
 #include "readpass/readpass.h"
 
 #include "libscrypt/b10.h"
@@ -39,10 +41,23 @@
 #define SCRYPT_p              16
 #define SCRYPT_SAFE_p      99999
 
-#define DEFAULT_ENCODING  "z85"
+#define DEFAULT_ENCODING   "z85"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
+typedef struct config_params {
+    char *scrypt_r;
+    char *scrypt_p;
+    char *keylen;
+    char *cache_cost;
+    char *cost;
+    char *name;
+    char *password;
+    char *site;
+    char *encoding;
+    char *cache_file;
+} configuration;
 
 void version(void) {
     const char *version_message=VERSION;
@@ -68,6 +83,8 @@ void usage(int status) {
       \n  -e, --encoding ENCODING   password encoding output, \""DEFAULT_ENCODING"\" by default\
       \n                              ENCODING: dec|hex|base64|z85|skey\
       \n  -1, --single              use single function derivation\
+      \n      --config FILE         configuration file\
+      \n\
       \n  -v, --verbose             verbose mode\
       \n  -V, --version             show version and exit\
       \n  -h, --help                show this help message and exit\n";
@@ -118,7 +135,8 @@ void zerostring(char *s) {
      while(*s) *s++ = 0;
 }
 
-int base91_encoding(unsigned char const *src, size_t srclength, void *target, size_t targsize) {
+int base91_encoding(unsigned char const *src, size_t srclength,
+                    void *target, size_t targsize) {
     static struct basE91 b91;
     size_t s;
     int total_size = 0;
@@ -159,12 +177,153 @@ int encode(char const *encoding, unsigned char const *src,
         return -1;
 }
 
+static int config_handler (void* user, const char* section, const char* name,
+                    const char* value) {
+    configuration* pconfig = (configuration*)user;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("user", "name")) {
+        pconfig->name = strdup(value);
+    } else if (MATCH("user", "site")) {
+        pconfig->site = strdup(value);
+    } else if (MATCH("user", "password")) {
+        pconfig->password = strdup(value);
+    } else if (MATCH("general", "cache_file")) {
+        pconfig->cache_file = strdup(value);
+    } else if (MATCH("general", "keylen")) {
+        pconfig->keylen = strdup(value);
+    } else if (MATCH("general", "cache_cost")) {
+        pconfig->cache_cost = strdup(value);
+    } else if (MATCH("general", "cost")) {
+        pconfig->cost = strdup(value);
+    } else if (MATCH("general", "scrypt_r")) {
+        pconfig->scrypt_r = strdup(value);
+    } else if (MATCH("general", "scrypt_p")) {
+        pconfig->scrypt_p = strdup(value);
+    } else if (MATCH("general", "encoding")) {
+        pconfig->encoding = strdup(value);
+    }
+    else {
+        return 0;  /* unknown section/name, error */
+    }
+    return 1;
+}
+
+void check_option(int choice, const char * const arg, int *option_value) {
+    char error_msg[256] = {0};
+    if (arg[0]) {
+        if (strtol(arg, NULL, 10) <= 0) {
+            if (choice == 200)
+                snprintf(error_msg, sizeof error_msg,
+                         "option '--scrypt-r' requires a numerical argument, '%s'",
+                         arg);
+            else if (choice == 201)
+                snprintf(error_msg, sizeof error_msg,
+                         "option '--scrypt-p' requires a numerical argument, '%s'",
+                         arg);
+            else
+                snprintf(error_msg, sizeof error_msg,
+                         "option '-%c' requires a numerical argument, '%s'",
+                         (char)choice, arg);
+            die(error_msg, 0, 1);
+
+        } else {
+
+            *option_value = (int) strtol(arg, NULL, 10);
+
+            switch (choice) {
+            case 'l':
+                if (*option_value < SCRYPT_HASH_LEN_MIN ||
+                    *option_value > SCRYPT_HASH_LEN_MAX) {
+                    snprintf(error_msg, sizeof error_msg,
+                             "option '-l' numerical value must be between %d-%d, '%d'",
+                             SCRYPT_HASH_LEN_MIN, SCRYPT_HASH_LEN_MAX, *option_value);
+                    die(error_msg, 0, 1);
+                }
+                break;
+            case 'c':
+                if (*option_value > SCRYPT_SAFE_N) {
+                    snprintf(error_msg, sizeof error_msg,
+                             "option '-c' numerical value must be between 1-%d, '%d'",
+                             SCRYPT_SAFE_N, *option_value);
+                    die(error_msg, 0, 1);
+                }
+                break;
+            case 'C':
+                if (*option_value > SCRYPT_SAFE_N) {
+                    snprintf(error_msg, sizeof error_msg,
+                             "option '-C' numerical value must be between 1-%d, '%d'",
+                             SCRYPT_SAFE_N, *option_value);
+                    die(error_msg, 0, 1);
+                }
+                break;
+            case 200:
+                if (*option_value > SCRYPT_SAFE_r) {
+                    snprintf(error_msg, sizeof error_msg,
+                             "option '--scrypt-r' numerical value must be between 1-%d, '%d'",
+                             SCRYPT_SAFE_r, *option_value);
+                    die(error_msg, 0, 1);
+                }
+                break;
+            case 201:
+                if (*option_value > SCRYPT_SAFE_p) {
+                    snprintf(error_msg, sizeof error_msg,
+                             "option '--scrypt-p' numerical value must be between 1-%d, '%d'",
+                             SCRYPT_SAFE_p, *option_value);
+                    die(error_msg, 0, 1);
+                }
+                break;
+            }
+        }
+    }
+}
+
+void check_encoding(int choice, const char * const arg) {
+    int valid_encoding = 0, i = 0;
+    char error_msg[256] = {0};
+    char *encoding = NULL;
+    const char *encodings[] = {"dec", "hex", "base64", "z85",
+                               "skey", "b91", NULL };
+
+    if (arg[0]) {
+        encoding = (char *) arg;
+        char * orig_encoding_input = malloc(1 + strlen(encoding));
+
+        if (orig_encoding_input)
+            for (i = 0; encoding[i]; ++i) //strcpy
+                orig_encoding_input[i] = encoding[i];
+        else  {
+            snprintf(error_msg, sizeof error_msg, "malloc() error: %s",
+                     strerror(errno));
+            die(error_msg, 0, 0);
+        }
+
+        for (i = 0; encoding[i]; ++i)
+            encoding[i] = tolower(encoding[i]);
+
+        const char ** pencodings = encodings;
+
+        while(*pencodings != NULL) {
+            if (strcmp(encoding, *pencodings) == 0)
+                valid_encoding = 1;
+            pencodings++;
+        }
+
+        if(!valid_encoding) {
+            snprintf(error_msg, sizeof error_msg,                       \
+                     "invalid text encoding '%s'", orig_encoding_input);
+            die(error_msg, 0, 1);
+        } free(orig_encoding_input);
+    }
+}
+
 int main(const int argc, const char * const argv[]) {
     char * name                                 = NULL;
     char * password                             = NULL;
     char * site                                 = NULL;
+    char * config_file                          = NULL;
     char registration_mode                      = 0;
-    const char * filename                       = NULL;
+    const char * cache_file                     = NULL;
     int  keylen                                 = SCRYPT_HASH_LEN;
     int  cache_cost                             = SCRYPT_CACHE_COST;
     int  cost                                   = SCRYPT_COST;
@@ -182,8 +341,6 @@ int main(const int argc, const char * const argv[]) {
     char verbose_msg[SCRYPT_HASH_LEN_MAX + 256] = {0};
     char mix_name_site[2032]                    = {0};
     const char * homedir                        = NULL;
-    const char *encodings[]                     = {
-        "dec", "hex", "base64", "z85", "skey", "b91", NULL };
     FILE  *fp                                   = NULL;
     int   i, readbytes, argi                    = 0;
     uint64_t cache_scrypt_n                     = 0;
@@ -191,6 +348,9 @@ int main(const int argc, const char * const argv[]) {
 
     uint8_t cache_hashbuf[SCRYPT_HASH_LEN_MAX]  = {0};
     uint8_t hashbuf[SCRYPT_HASH_LEN_MAX]        = {0};
+
+    configuration conf                          = {0};
+    bool is_config                              = false;
 
     struct rlimit rlim;
     struct Arg_parser parser;
@@ -205,6 +365,7 @@ int main(const int argc, const char * const argv[]) {
       { 'c', "cost",                ap_yes },
       { 200, "scrypt-r",            ap_yes },
       { 201, "scrypt-p",            ap_yes },
+      { 202, "config",              ap_yes },
       { 'N', "dry-run",             ap_no  },
       { 'e', "encoding",            ap_yes },
       { '1', "single",              ap_no  },
@@ -221,7 +382,7 @@ int main(const int argc, const char * const argv[]) {
 
     //process options
     if (!ap_init(&parser, argc, argv, options, 0))
-        die("Not enough memory.", 0, 0);
+        die("not enough memory.", 0, 0);
     //unrecognized option
     if (ap_error(&parser)) die(ap_error(&parser), 0, 1);
 
@@ -233,106 +394,26 @@ int main(const int argc, const char * const argv[]) {
                 case 'n': if (arg[0]) { name     = (char *) arg; } break;
                 case 'p': if (arg[0]) { password = (char *) arg; } break;
                 case 's': if (arg[0]) { site     = (char *) arg; } break;
+                case 202: if (arg[0]) {
+                    is_config   = true;
+                    config_file = (char *) arg;
+                } break;
                 case 'r': registration_mode = 1; break;
-                case 'f': if (arg[0]) { filename = arg; } break;
-                case 'l': if (arg[0]) {
-                    if (strtol(arg, NULL, 10) <= 0) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "option '-l' requires a numerical argument, '%s'", arg);
-                        die(error_msg, 0, 1);
-                    } else {
-                        keylen = (int) strtol(arg, NULL, 10);
-                        if (keylen < SCRYPT_HASH_LEN_MIN || \
-                            keylen > SCRYPT_HASH_LEN_MAX) {
-                            snprintf(error_msg, sizeof error_msg, \
-                                "option '-l' numerical value must be between %d-%d, '%d'", \
-                                SCRYPT_HASH_LEN_MIN, SCRYPT_HASH_LEN_MAX, keylen);
-                            die(error_msg, 0, 1);
-                        }
-                    } } break;
-
-                case 'C': if (arg[0]) {
-                    if (strtol(arg, NULL, 10) <= 0) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "option '-C' requires a numerical argument, '%s'", arg);
-                        die(error_msg, 0, 1);
-                    } else {
-                        cache_cost = (int) strtol(arg, NULL, 10);
-                        if (cache_cost > SCRYPT_SAFE_N) {
-                            snprintf(error_msg, sizeof error_msg, \
-                                "option '-C' numerical value must be between 1-%d, '%d'", \
-                                SCRYPT_SAFE_N, cache_cost);
-                            die(error_msg, 0, 1);
-                        }
-                    } } break;
-
-                case 'c': if (arg[0]) {
-                    if (strtol(arg, NULL, 10) <= 0) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "option '-c' requires a numerical argument, '%s'", arg);
-                        die(error_msg, 0, 1);
-                    } else {
-                        cost = (int) strtol(arg, NULL, 10);
-                        if (cost > SCRYPT_SAFE_N) {
-                            snprintf(error_msg, sizeof error_msg, \
-                                "option '-c' numerical value must be between 1-%d, '%d'", \
-                                SCRYPT_SAFE_N, cost);
-                            die(error_msg, 0, 1);
-                        }
-                    } } break;
-
-                case 200: if (arg[0]) {
-                    if (strtol(arg, NULL, 10) <= 0) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "option '--scrypt-r' requires a numerical argument, '%s'", arg);
-                        die(error_msg, 0, 1);
-                    } else {
-                        scrypt_r = (int) strtol(arg, NULL, 10);
-                        if (scrypt_r > SCRYPT_SAFE_r) {
-                            snprintf(error_msg, sizeof error_msg, \
-                                "option '--scrypt-r' numerical value must be between 1-%d, '%d'", \
-                                SCRYPT_SAFE_r, scrypt_r);
-                            die(error_msg, 0, 1);
-                        }
-                    } } break;
-
-                case 201: if (arg[0]) {
-                    if (strtol(arg, NULL, 10) <= 0) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "option '--scrypt-p' requires a numerical argument, '%s'", arg);
-                        die(error_msg, 0, 1);
-                    } else {
-                        scrypt_p = (int) strtol(arg, NULL, 10);
-                        if (scrypt_p > SCRYPT_SAFE_p) {
-                            snprintf(error_msg, sizeof error_msg, \
-                                "option '--scrypt-p' numerical value must be between 1-%d, '%d'", \
-                                SCRYPT_SAFE_p, scrypt_p);
-                            die(error_msg, 0, 1);
-                        }
-                    } } break;
-
+                case 'f': if (arg[0]) { cache_file = arg; } break;
+                case 'l': check_option(code, arg, &keylen);
+                    break;
+                case 'C': check_option(code, arg, &cache_cost);
+                    break;
+                case 'c': check_option(code, arg, &cost);
+                    break;
+                case 200: check_option(code, arg, &scrypt_r);
+                    break;
+                case 201: check_option(code, arg, &scrypt_p);
+                    break;
                 case 'N': dry_run = 1; break;
-                case 'e': if (arg[0]) {
-                    int valid_encoding = 0;
+                case 'e': check_encoding(code, arg);
                     encoding = (char *) arg;
-                    char * orig_encoding_input = malloc(1+strlen(encoding));
-                    if (orig_encoding_input)
-                        for (i=0; encoding[i]; ++i) //strcpy
-                            orig_encoding_input[i] = encoding[i];
-                    else  { snprintf(error_msg, sizeof error_msg, \
-                                "malloc() error: %s", strerror(errno));
-                            die(error_msg, 0, 0); }
-                    for (i=0; encoding[i]; ++i) encoding[i] = tolower(encoding[i]);
-                    const char ** pencodings  = encodings;
-                    while(*pencodings != NULL) {
-                        if (strcmp(encoding,*pencodings) == 0) valid_encoding = 1;
-                        pencodings++;
-                    }
-                    if(!valid_encoding) {
-                        snprintf(error_msg, sizeof error_msg, \
-                            "invalid text encoding '%s'", orig_encoding_input);
-                        die(error_msg, 0, 1);
-                    } free(orig_encoding_input); } break;
+                    break;
                 case '1': single_function_derivation = 1; break;
                 case 'v': verbose_lvl += 1; break;
                 case 'V': version(); break;
@@ -340,6 +421,35 @@ int main(const int argc, const char * const argv[]) {
                 default : die("uncaught option.", 0, 1);
             }
         } else { if (arg[0]) site = (char *) arg; }
+    }
+
+    //check if configuration file is provided
+    if (is_config) {
+        if (ini_parse(config_file, config_handler, &conf) < 0) {
+            snprintf(error_msg, sizeof error_msg,
+                     "couldn't load config file '%s'", config_file);
+            die(error_msg, 0, 1);
+        }
+
+        if (conf.name)       {name = conf.name;}
+        if (conf.site)       {site = conf.site;}
+        if (conf.password)   {password = conf.password;}
+        if (conf.cache_file) {cache_file = conf.cache_file;}
+
+        if (conf.keylen)
+            check_option('l', (const char * const) conf.keylen, &keylen);
+        if (conf.cost)
+            check_option('c', (const char * const) conf.cost, &cost);
+        if (conf.cache_cost)
+            check_option('C', (const char * const) conf.cache_cost, &cache_cost);
+        if (conf.scrypt_r)
+            check_option(200, (const char * const) conf.scrypt_r, &scrypt_r);
+        if (conf.scrypt_p)
+            check_option(201, (const char * const) conf.scrypt_p, &scrypt_p);
+        if (conf.encoding) {
+            check_encoding('e', (const char * const) conf.encoding);
+            encoding = conf.encoding;
+        }
     }
 
     //initialize missing options
@@ -359,10 +469,10 @@ int main(const int argc, const char * const argv[]) {
         }
     }
 
-    if (filename == NULL) {
+    if (cache_file == NULL) {
         if ((homedir = getenv("HOME")) != NULL) {
             snprintf(fpath, sizeof fpath, "%s/%s", homedir, ".genpass-cache");
-            filename = fpath;
+            cache_file = fpath;
         } else {
             fprintf(stderr, "Warning: unable to determinate HOME directory, ");
             fprintf(stderr, "falling to --dry-mode ...\n");
@@ -402,8 +512,8 @@ int main(const int argc, const char * const argv[]) {
     scrypt_n       = _pow(2,cost);
 
     if (!single_function_derivation && !dry_run) {
-        fp = fopen(filename, "rb");
-        snprintf(verbose_msg, sizeof(verbose_msg), "Trying to open %s", filename);
+        fp = fopen(cache_file, "rb");
+        snprintf(verbose_msg, sizeof(verbose_msg), "Trying to open %s", cache_file);
         verbose(verbose_msg, verbose_lvl);
         if (fp!=NULL) {
             verbose("File open, attempting to read cache key", verbose_lvl);
@@ -419,7 +529,7 @@ int main(const int argc, const char * const argv[]) {
                 readbytes = 0; for (i = 0; i < (cache_cost+scrypt_r+scrypt_p); i++)
                     readbytes = fread(cache_hashbuf,1,keylen,fp);
                 if (readbytes != keylen) {
-                    fprintf(stderr, "Warning: error while reading %s, ", filename);
+                    fprintf(stderr, "Warning: error while reading %s, ", cache_file);
                     fprintf(stderr, "falling to --dry-mode ...\n");
                     dry_run = 1;
                 } else {
@@ -453,13 +563,13 @@ int main(const int argc, const char * const argv[]) {
 
     if (!single_function_derivation && !dry_run && !cache_hash_in_file) {
         snprintf(verbose_msg, sizeof(verbose_msg), \
-            "Attempting to save cache key to %s", filename);
+            "Attempting to save cache key to %s", cache_file);
         verbose(verbose_msg, verbose_lvl);
-        fp = fopen(filename, "wb");
+        fp = fopen(cache_file, "wb");
         if (fp!=NULL) {
             for (i = 0; i < (cache_cost+scrypt_r+scrypt_p); i++) {
                 if (fwrite(&cache_hashbuf, keylen, 1, fp) != 1) {
-                    fprintf(stderr, "Warning: error while writing %s, ", filename);
+                    fprintf(stderr, "Warning: error while writing %s, ", cache_file);
                     fprintf(stderr, "falling to --dry-mode ...\n");
                     dry_run = 1;
                     break;
