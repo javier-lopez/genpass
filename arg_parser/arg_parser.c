@@ -89,28 +89,14 @@ static char parse_long_option( struct Arg_parser * const ap,
   {
   unsigned len;
   int index = -1, i;
-  char exact = 0, ambig = 0;
 
   for( len = 0; opt[len+2] && opt[len+2] != '='; ++len ) ;
 
-  /* Test all long options for either exact match or abbreviated matches. */
+  /* Test all long options for exact match */
   for( i = 0; options[i].code != 0; ++i )
-    if( options[i].name && strncmp( options[i].name, &opt[2], len ) == 0 )
-      {
-      if( strlen( options[i].name ) == len )	/* Exact match found */
-        { index = i; exact = 1; break; }
-      else if( index < 0 ) index = i;		/* First nonexact match found */
-      else if( options[index].code != options[i].code ||
-               options[index].has_arg != options[i].has_arg )
-        ambig = 1;			/* Second or later nonexact match found */
-      }
-
-  if( ambig && !exact )
-    {
-    add_error( ap, "option '" ); add_error( ap, opt );
-    add_error( ap, "' is ambiguous" );
-    return 1;
-    }
+    if( options[i].name && strncmp( options[i].name, &opt[2], strlen(options[i].name)) == 0 )
+      if( len == strlen(options[i].name) )
+        index = i;
 
   if( index < 0 )		/* nothing found */
     {
