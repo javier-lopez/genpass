@@ -2,5 +2,5 @@ Usage
 -----
 
    ```sh
-   $ sh test.sh
+   $ xvfb-run sh test.sh
    ```
