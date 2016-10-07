@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2013 Stanislav Artemkin <artemkin@gmail.com>.
  *
@@ -180,4 +181,3 @@ char* Z85_decode_unsafe(const char* source, const char* sourceEnd, char* dest);
 #if defined (__cplusplus)
 }
 #endif
-

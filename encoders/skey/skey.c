@@ -1,3 +1,4 @@
+
 /* This code originally appeared in the source for S/Key(TM),
  * available in the directory: ftp://thumper.bellcore.com/pub/nmh
  *

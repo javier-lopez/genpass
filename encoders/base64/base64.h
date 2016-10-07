@@ -11,4 +11,4 @@ int	libscrypt_b64_encode(unsigned char const *src, size_t srclength,
 int	libscrypt_b64_encode_compliant(unsigned char const *src, size_t srclength,
         /*@out@*/ char *target, size_t targetsize);
 int	libscrypt_b64_decode_compliant(char const *src,
-        /*@out@*/ unsigned char *target, size_t targetsize);
+/*@out@*/ unsigned char *target, size_t targetsize);

@@ -20,23 +20,18 @@ static const char Pad64 = '\0';
    The following encoding technique is taken from RFC 1521 by Borenstein
    and Freed.  It is reproduced here in a slightly edited form for
    convenience.
-
    A 65-character subset of US-ASCII is used, enabling 6 bits to be
    represented per printable character. (The extra 65th character, "=",
    is used to signify a special processing function.)
-
    The encoding process represents 24-bit groups of input bits as output
    strings of 4 encoded characters. Proceeding from left to right, a
    24-bit input group is formed by concatenating 3 8-bit input groups.
    These 24 bits are then treated as 4 concatenated 6-bit groups, each
    of which is translated into a single digit in the base64 alphabet.
-
    Each 6-bit group is used as an index into an array of 64 printable
    characters. The character referenced by the index is placed in the
    output string.
-
                          Table 1: The Base64 Alphabet
-
       Value Encoding  Value Encoding  Value Encoding  Value Encoding
           0 A            17 R            34 i            51 z
           1 B            18 S            35 j            52 0
@@ -55,18 +50,15 @@ static const char Pad64 = '\0';
          14 O            31 f            48 w         (pad) =
          15 P            32 g            49 x
          16 Q            33 h            50 y
-
    Special processing is performed if fewer than 24 bits are available
    at the end of the data being encoded.  A full encoding quantum is
    always completed at the end of a quantity.  When fewer than 24 input
    bits are available in an input group, zero bits are added (on the
    right) to form an integral number of 6-bit groups.  Padding at the
    end of the data is performed using the '=' character.
-
    Since all base64 input is an integral number of octets, only the
          -------------------------------------------------
    following cases can arise:
-
        (1) the final quantum of encoding input is an integral
            multiple of 24 bits; here, the final unit of encoded
 	   output will be an integral multiple of 4 characters
