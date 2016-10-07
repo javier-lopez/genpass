@@ -49,3 +49,12 @@ clean:
 		fi; \
 	done;
 	rm -f *.o genpass genpass-static
+
+test:
+	@for mkfile in test/*.mk; do \
+		echo "running $$mkfile"; \
+		$(MAKE) -f $$mkfile; \
+	done;
+	@echo "all tests passed"
+
+.PHONY: test

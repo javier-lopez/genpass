@@ -83,7 +83,7 @@ test X"$(genpass-static -f ./key --config genpass.config)"               = X"4>K
 test -f genpass.config && rm -rf genpass.config
 
 #expect tests
-for genpass_test_exp in ../genpass*; do sh "${genpass_test_exp}" || exit 1; done
+for genpass_test_exp in ../genpass*exp.sh; do sh "${genpass_test_exp}" || exit 1; done
 @end
 
 @begin{getpass}
