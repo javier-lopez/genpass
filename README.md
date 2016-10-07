@@ -38,6 +38,20 @@ A stateless password generator.
    $ cp genpass genpass-static /usr/local/bin/
    ```
 
+**Only for the dynamic genpass binary**
+
+3. Install `libscrypt` from your prefered source. On Ubuntu/Debian it's named `libscrypt0`
+
+   ```
+   $ sudo apt-get install libscrypt0
+   ```
+
+3. Or use the bundled `./libscrypt/libscrypt.so.0` one.
+
+   ```
+   $ sudo cp ./libscrypt/libscrypt.so.0 /usr/lib/
+   ```
+
 Linux static binaries can also be retrieved with [static-get](https://github.com/minos-org/minos-static), for x86|amd64 platforms
 
 1. Fetch static binaries
