@@ -85,6 +85,8 @@ Encoding              | z85
 
 Past default values are listed in the [defaults.md](https://github.com/chilicuil/genpass/blob/master/defaults.md) file.
 
+Also, you can pass the configuration file (.ini file extension) using `--config` option. Even if some parameters are ommited from configuration file, then it will either take input from command line or default value will be assigned. Refer to [genpass-example.ini](https://github.com/chilicuil/genpass/blob/master/config/genpass-example.ini) file
+
 ## Scheme
 
 The [scheme](https://www.cs.utexas.edu/~bwaters/publications/papers/www2005.pdf) uses two levels of hash computations (although with the -1 parameter it can use only one). The first level is executed once when a user begins to use a new machine for the first time. This computation is parameterized to take a relatively long time (around 60 seconds on this implementation) and its result are cached for future password calculations by the same user. The next level is used to compute site-specific passwords. It takes as input the calculation produced from the first level as well as the name of the site or account for which the user is interested, the computation time is parameterized to be fast (around .1 seconds in our implementation).
