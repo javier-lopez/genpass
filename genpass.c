@@ -18,17 +18,12 @@
 #include "arg_parser/arg_parser.h"
 #include "config/ini.h"
 #include "readpass/readpass.h"
-
-#include "libscrypt/b10.h"
-#include "libscrypt/b64.h"
-#include "libscrypt/z85.h"
-#include "libscrypt/skey.h"
 #include "libscrypt/libscrypt.h"
-#include "base91/base91.h"
+#include "encoders/encoders.h"
 
 #define VERSION "2016.05.04"
 
-//libscrypt/libscrypt.h:57
+// libscrypt/libscrypt.h:57
 #undef  SCRYPT_HASH_LEN
 #define SCRYPT_HASH_LEN       32 //or 256 bits
 #define SCRYPT_HASH_LEN_MAX 1024
@@ -135,30 +130,6 @@ void zerostring(char *s) {
      while(*s) *s++ = 0;
 }
 
-int base91_encoding(unsigned char const *src, size_t srclength,
-                    void *target, size_t targsize) {
-    static struct basE91 b91;
-    size_t s;
-    int total_size = 0;
-
-    // zero the output buffer
-    memset(target,'\0',targsize);
-
-    // setup the base91 struct
-    basE91_init(&b91);
-
-    // encode most of it and keep the size
-    s = basE91_encode(&b91, src, srclength, target);
-    total_size += s;
-
-    // pickup anything left and keep the size
-    s = basE91_encode_end(&b91, (void*)(target+s));
-    total_size += s;
-
-    // return the total size
-    return total_size;
-}
-
 int encode(char const *encoding, unsigned char const *src,
            size_t srclength, char *target, size_t targsize) {
     if (strcmp(encoding, "z85") == 0)
@@ -172,7 +143,7 @@ int encode(char const *encoding, unsigned char const *src,
     else if (strcmp(encoding, "skey") == 0)
         return libscrypt_skey_encode(src, srclength, target, targsize);
     else if (strcmp(encoding, "b91") == 0)
-        return base91_encoding(src, srclength, target, targsize);
+        return base91_glue_encode(src, srclength, target, targsize);
     else
         return -1;
 }

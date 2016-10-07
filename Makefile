@@ -23,19 +23,11 @@ deps:
 
 genpass: deps genpass.o
 	$(CC)  -o genpass genpass.o arg_parser/arg_parser.o config/ini.o \
-		readpass/readpass.o libscrypt/b10.o         \
-		libscrypt/b64.o     libscrypt/z85.o         \
-		libscrypt/skey.o			    \
-		libscrypt/crypto_scrypt-hexconvert.o        \
-		base91/base91.o                             \
+		readpass/readpass.o encoders/*.o \
 		$(CFLAGS_EXTRA) -L./libscrypt/ -lscrypt
 	$(CC) -static -o genpass-static genpass.o           \
 		arg_parser/arg_parser.o config/ini.o readpass/readpass.o \
-		libscrypt/b10.o                             \
-		libscrypt/b64.o libscrypt/z85.o             \
-		libscrypt/skey.o			    \
-		libscrypt/crypto_scrypt-hexconvert.o        \
-		base91/base91.o                             \
+		encoders/*.o \
 		$(CFLAGS_EXTRA) -L./libscrypt/ -lscrypt
 
 dist: all
