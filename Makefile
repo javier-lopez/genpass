@@ -41,3 +41,9 @@ clean:
 		fi; \
 	done;
 	rm -f *.o genpass genpass-static
+	rm -rf test/*.tmp
+
+test: all
+	xvfb-run sh test/test.sh
+
+.PHONY: test
