@@ -74,7 +74,7 @@ First time usage:
     Name: Guy Mann
     Site: github.com
     Master password: passwd #it won't be shown
-    4c%7hZ5w]MZUB6RRPCJ&?wKTFtd[6Oj.P.02d+kIs
+    4?Hs>Jf#r*X9>7rznOS?4L=ysh&X>M/?8F>?^P(hW
 
 This will prompt you for your name, site and master password. The first time it's executed it will take a relative long time (a couple of minutes) to get back. It'll create a cache key and will save it to `~/.genpass-cache`, then it will combine it with the master password and the site string to generate the final password. The cache key file should be guarded with moderate caution. If it gets leaked possible attackers may have an easier time guessing your master password (although it still will be considerably harder than average brute force attacks).
 
@@ -86,7 +86,7 @@ Because `genpass` hashes your (master password + url + name), you can use it to 
 
 It's recommended to defined cost, length and other parameters explicitly, default values will change between versions as computers get updated on CPU/RAM.
 
-Default values for version `2016.05.04` are:
+Default values for version `2016.10.30` are:
 
 Parameter             | Value
 --------------------- | -------------
@@ -99,7 +99,7 @@ Encoding              | z85
 
 Past default values are listed in the [defaults.md](https://github.com/chilicuil/genpass/blob/master/defaults.md) file.
 
-Also, you can pass the configuration file (.ini file extension) using `--config` option. Even if some parameters are ommited from configuration file, then it will either take input from command line or default value will be assigned. Refer to [genpass-example.ini](https://github.com/chilicuil/genpass/blob/master/config/genpass-example.ini) file
+In addition, you can setup a configuration file using the `--config` option. An example is provided here: [genpass-example.ini](https://github.com/chilicuil/genpass/blob/master/config/genpass-example.ini).
 
 ## Scheme
 

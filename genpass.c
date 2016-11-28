@@ -21,7 +21,7 @@
 #include "libscrypt/libscrypt.h"
 #include "encoders/encoders.h"
 
-#define VERSION "2016.05.04"
+#define VERSION "2016.10.30"
 
 // libscrypt/libscrypt.h:57
 #undef  SCRYPT_HASH_LEN
