@@ -1,11 +1,11 @@
 ## genpass
 
-[![Build Status](https://travis-ci.org/chilicuil/genpass.png?branch=master)](https://travis-ci.org/chilicuil/genpass)
+[![Build Status](https://travis-ci.org/javier-lopez/genpass.png?branch=master)](https://travis-ci.org/javier-lopez/genpass)
 
 A stateless password generator.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/chilicuil/genpass/master/genpass.gif" alt="genpass"/>
+<img src="https://raw.githubusercontent.com/javier-lopez/genpass/master/genpass.gif" alt="genpass"/>
 </p>
 
 ## Quick start
@@ -97,9 +97,9 @@ Scrypt p              | 16 bits
 Key length            | 32 bytes, 256 bits
 Encoding              | z85
 
-Past default values are listed in the [defaults.md](https://github.com/chilicuil/genpass/blob/master/defaults.md) file.
+Past default values are listed in the [defaults.md](https://github.com/javier-lopez/genpass/blob/master/defaults.md) file.
 
-In addition, you can setup a configuration file using the `--config` option. An example is provided here: [genpass-example.ini](https://github.com/chilicuil/genpass/blob/master/config/genpass-example.ini).
+In addition, you can setup a configuration file using the `--config` option. An example is provided here: [genpass-example.ini](https://github.com/javier-lopez/genpass/blob/master/config/genpass-example.ini).
 
 ## Scheme
 
