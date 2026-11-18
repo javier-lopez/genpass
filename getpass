@@ -72,12 +72,10 @@ _notify() {
 
     kill -9 $(pgrep notify-osd) >/dev/null 2>&1
     if ! DISPLAY=${DISPLAY:-:0} notify-send -t 1000 "${_notify__msg}" "${_notify__clipboard_msg}"; then
-        if command -v "gxmessage" 2>/dev/null; then
-            font="Monaco 9"
-            DISPLAY=${DISPLAY:-:0} gxmessage "${font:+-fn "$font"}" "${_notify__msg}:${_notify__clipboard_msg}" "ok"
-        elif command -v "xmessage" 2>/dev/null; then
-            font="fixed"
-            DISPLAY=${DISPLAY:-:0} xmessage "${font:+-fn "$font"}" "${_notify__msg}:${_notify__clipboard_msg}" "ok"
+        if command -v gxmessage >/dev/null 2>&1; then
+            DISPLAY=${DISPLAY:-:0} gxmessage -fn "Monaco 9" -buttons OK "${_notify__msg}${_notify__clipboard_msg:+: ${_notify__clipboard_msg}}"
+        elif command -v xmessage >/dev/null 2>&1; then
+            DISPLAY=${DISPLAY:-:0} LC_ALL=C.UTF-8 xmessage -xrm '*international: true' -xrm '*fontSet: -misc-fixed-medium-r-normal--13-*-*-*-*-*-*-*' -bg black -fg '#c7c1cc' -buttons OK "${_notify__msg}${_notify__clipboard_msg:+: ${_notify__clipboard_msg}}"
         fi
     fi
 }
